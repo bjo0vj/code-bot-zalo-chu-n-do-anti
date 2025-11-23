@@ -5,7 +5,7 @@ module.exports.config = {
     name: "remove",
     version: "1.0.1",
     role: 0,
-    author: "Antigravity",
+    author: "TDF-2803",
     description: "Xóa thành viên khỏi database sendall",
     category: "SendAll",
     usage: "/remove data_sendall (tự xóa) hoặc /remove data_sendall:@tag (admin xóa)",

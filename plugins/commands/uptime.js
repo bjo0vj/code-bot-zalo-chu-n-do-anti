@@ -2,7 +2,7 @@ module.exports.config = {
   name: 'uptime',
   version: '1.0.0',
   role: 0,
-  author: 'ShinTHL09',
+  author: "TDF-2803",
   description: 'Hiển thị thời gian hoạt động của bot',
   category: 'Hệ thống',
   usage: 'uptime',

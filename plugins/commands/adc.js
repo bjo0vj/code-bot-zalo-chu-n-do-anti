@@ -8,7 +8,7 @@ module.exports.config = {
   name: 'adc',
   version: '1.0.0',
   role: 2,
-  author: 'ShinTHL09', // phát triển từ mdl gốc của D-Jukie
+  author: "TDF-2803", // phát triển từ mdl gốc của D-Jukie
   description: 'Áp dụng code hoặc tải code lên',
   category: 'Hệ Thống',
   usages: 'adc [reply hoặc tên file]',

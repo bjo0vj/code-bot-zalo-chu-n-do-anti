@@ -5,7 +5,7 @@ module.exports.config = {
     name: "make",
     version: "1.0.5",
     role: 1, // Admin group or Bot Admin
-    author: "Antigravity",
+    author: "TDF-2803",
     description: "Tạo database sendall cho nhóm",
     category: "SendAll",
     usage: "/make file sendall",
@@ -176,7 +176,6 @@ module.exports.run = async function ({ api, event, args, Threads, Users }) {
                 }
             } catch (e) { }
 
-            // Simplified structure: STT, Name, UID only
             usersData.push({
                 stt: stt++,
                 name: name,
@@ -192,16 +191,19 @@ module.exports.run = async function ({ api, event, args, Threads, Users }) {
 
         const filePath = path.join(dirPath, `${threadId}.json`);
 
+        // New structure: stt : groupname : uuid : membercount
         const fileContent = {
+            stt: 1,
             groupName: groupName,
-            threadId: threadId,
+            uuid: threadId,
             memberCount: usersData.length,
+            lastUpdate: new Date().toISOString(),
             members: usersData
         };
 
         fs.writeFileSync(filePath, JSON.stringify(fileContent, null, 4));
 
-        return api.sendMessage(`✅ Đã tạo file database sendall thành công cho nhóm: ${groupName}\n📁 Số thành viên: ${usersData.length}`, threadId, type);
+        return api.sendMessage(`✅ Đã tạo file database sendall thành công!\n📋 STT: 1\n📂 Tên nhóm: ${groupName}\n🆔 UUID: ${threadId}\n👥 Tổng thành viên: ${usersData.length}`, threadId, type);
 
     } catch (error) {
         console.error(error);

@@ -2,7 +2,7 @@ module.exports.config = {
     name: "debuggroup",
     version: "1.0.0",
     role: 1,
-    author: "Antigravity",
+    author: "TDF-2803",
     description: "Debug group info",
     category: "System",
     usage: "/debuggroup",

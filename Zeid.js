@@ -8,7 +8,6 @@ const loaderCommand = require("./core/loader/loaderCommand");
 const loaderEvent = require("./core/loader/loaderEvent");
 const schedule = require("node-schedule");
 const { cleanOldMessages } = require("./utils/index");
-require('./server.js'); // Keep-alive for Replit
 
 global.client = new Object({
   commands: new Map(),
@@ -89,11 +88,6 @@ global.api = null;
   schedule.scheduleJob("*/10 * * * *", () => {
     cleanOldMessages();
   });
-
-  // Connect to Database
-  const database = require("./utils/database");
-  await database.connect();
-  global.database = database; // Make DB accessible globally
 
   const api = await login();
 

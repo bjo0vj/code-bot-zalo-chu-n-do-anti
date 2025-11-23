@@ -2,7 +2,7 @@ module.exports.config = {
     event_type: ["message"],
     name: "goibot",
     version: "1.0.0",
-    author: "ShinTHL09",
+    author: "TDF-2803",
     description: "Gọi bot",
     dependencies: {}
 };

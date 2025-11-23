@@ -2,7 +2,7 @@ module.exports.config = {
     name: "setprefix",
     version: "1.0.0",
     role: 1,
-    author: "ShinTHL09",
+    author: "TDF-2803",
     description: "Đặt lại prefix của nhóm",
     category: "Nhóm",
     usage: "[prefix/reset]",

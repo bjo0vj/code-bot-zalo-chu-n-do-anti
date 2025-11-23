@@ -4,7 +4,7 @@ module.exports.config = {
   name: '',
   version: '1.0.1',
   role: 0,
-  author: 'ShinTHL09',
+  author: "TDF-2803",
   description: 'Hiện tin nhắn khi sử dụng prefix',
   category: 'Không xài lệnh',
   usage: 'prefix',

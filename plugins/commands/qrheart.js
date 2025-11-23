@@ -6,7 +6,7 @@ module.exports.config = {
   name: 'qrheart',
   version: '1.0.0',
   role: 0,
-  author: 'ShinTHL09',
+  author: "TDF-2803",
   description: 'Tạo mã QR trái tim từ văn bản',
   category: 'Tiện ích',
   usage: 'qrcode <nội dung> - <chữ mô tả>',

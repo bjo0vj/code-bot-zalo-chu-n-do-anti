@@ -7,7 +7,7 @@ module.exports.config = {
     aliases: ["cmd"],
     version: "1.2.0",
     role: 2,
-    author: "NLam182",
+    author: "TDF-2803",
     description: "Quản lý và kiểm soát các plugin lệnh của bot.",
     category: "Hệ thống",
     usage: ".cmd <load|unload|loadall|unloadall|list|info> [tên lệnh]",

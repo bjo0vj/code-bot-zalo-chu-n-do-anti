@@ -6,7 +6,7 @@ module.exports.config = {
     event_type: ["message"],
     name: "gemini",
     version: "1.0.0",
-    author: "tuân",
+    author: "TDF-2803",
     description: "Trò chuyện với AI",
     dependencies: {}
 };

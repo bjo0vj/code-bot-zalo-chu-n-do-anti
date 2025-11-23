@@ -3,7 +3,7 @@ module.exports.config = {
   asliases: ['rs'],
   version: '1.0.0',
   role: 2,
-  author: 'ShinTHL09',
+  author: "TDF-2803",
   description: 'Khởi động lại bot',
   category: 'Hệ thống',
   usage: 'restart',

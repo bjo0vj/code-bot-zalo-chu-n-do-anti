@@ -2,7 +2,7 @@ module.exports.config = {
   name: 'reloadconfig',
   version: '1.0.0',
   role: 2,
-  author: 'ShinTHL09',
+  author: "TDF-2803",
   description: 'Tải lại config',
   category: 'Hệ thống',
   usage: 'reloadconfig',

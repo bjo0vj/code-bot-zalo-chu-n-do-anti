@@ -13,7 +13,7 @@ module.exports = {
   getData: (userId) => {
     const existing = db.prepare('SELECT 1 FROM Users WHERE userId = ?').get(userId);
     if (!existing) {
-      module.exports.createData(userId, { ban: false, money: global.config.default_money});
+      module.exports.createData(userId, { ban: false, money: global.config.default_money });
       logger.log("Đã tạo database cho người dùng: " + userId, "info");
     }
     return getData('Users', 'userId', userId);

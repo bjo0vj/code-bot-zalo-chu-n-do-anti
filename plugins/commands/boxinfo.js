@@ -7,7 +7,7 @@ module.exports.config = {
     name: "boxinfo",
     version: "1.0.0",
     role: 0,
-    author: "NLam182",
+    author: "TDF-2803",
     description: "Hiển thị thông tin chi tiết của nhóm chat",
     category: "Tiện ích",
     usage: "<prefix>info",

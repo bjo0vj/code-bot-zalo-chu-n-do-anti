@@ -2,7 +2,7 @@ module.exports.config = {
     event_type: ["group_event"],
     name: "joinNoti",
     version: "1.0.1",
-    author: "NLam182",
+    author: "TDF-2803",
     description: "Chào mừng thành viên mới vào nhóm và xóa sau 15 giây"
 };
 

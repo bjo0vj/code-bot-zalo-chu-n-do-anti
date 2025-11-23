@@ -8,7 +8,7 @@ module.exports.config = {
   name: "anti",
   version: "1.1.7",
   role: 1,
-  author: "ShinTHL09",
+  author: "TDF-2803",
   description: "Bật/tắt các chế độ Anti của nhóm",
   category: "Nhóm",
   usage: "anti <link|undo|spam>",

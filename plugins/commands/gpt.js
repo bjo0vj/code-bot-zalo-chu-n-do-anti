@@ -4,7 +4,7 @@ module.exports.config = {
   name: 'gpt',
   version: '1.0.0',
   role: 0,
-  author: 'ShinTHL09',
+  author: "TDF-2803",
   description: 'Hỏi chatgpt',
   category: 'Tiện ích',
   usage: 'gpt <text>',

@@ -5,7 +5,7 @@ module.exports.config = {
     name: "add",
     version: "1.0.4",
     role: 0,
-    author: "Antigravity",
+    author: "TDF-2803",
     description: "Thêm thành viên vào database sendall",
     category: "SendAll",
     usage: "/add data_sendall (tự thêm) hoặc /add data_sendall:@tag (admin thêm)",

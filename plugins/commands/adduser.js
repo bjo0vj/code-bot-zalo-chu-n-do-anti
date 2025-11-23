@@ -4,7 +4,7 @@ module.exports.config = {
   name: "adduser",
   version: "1.0.0", 
   role: 2, 
-  author: "NLam182",
+  author: "TDF-2803",
   description: "Thêm người dùng vào nhóm bằng User ID hoặc số điện thoại.",
   category: "Nhóm",
   usage: "adduser <userId_hoac_sdt>",

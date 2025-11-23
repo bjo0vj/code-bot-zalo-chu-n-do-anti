@@ -5,7 +5,7 @@ module.exports.config = {
     name: "sort",
     version: "1.0.1",
     role: 1, // Admin
-    author: "Antigravity",
+    author: "TDF-2803",
     description: "Sắp xếp lại danh sách sendall",
     category: "SendAll",
     usage: "/sort data_sendall",

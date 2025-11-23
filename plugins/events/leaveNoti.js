@@ -7,7 +7,7 @@ module.exports.config = {
     event_type: ["group_event"],
     name: "leaveNoti",
     version: "1.0.1",
-    author: "NLam182",
+    author: "TDF-2803",
     description: "Thông báo khi có thành viên rời hoặc bị xóa khỏi nhóm và xóa sau 15 giây"
 };
 

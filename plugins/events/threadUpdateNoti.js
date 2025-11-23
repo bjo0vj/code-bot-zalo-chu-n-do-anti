@@ -7,7 +7,7 @@ module.exports.config = {
     name: "threadUpdateNoti",
     event_type: ["group_event", "message"],
     version: "1.1.1",
-    author: "NLam182",
+    author: "TDF-2803",
     description: "Thông báo chi tiết tất cả hoạt động cập nhật trong nhóm"
 };
 

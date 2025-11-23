@@ -4,7 +4,7 @@ module.exports.config = {
   name: 'admin',
   version: '1.1.0',
   role: 2,
-  author: 'ShinTHL09',
+  author: "TDF-2803",
   description: 'Quản lý admin và support của bot bằng ID hoặc tag.',
   category: 'Hệ thống',
   usage: 'admin <add|rm|sp|rmsp|list> [@tag/ID] (có thể tag nhiều người, nhập nhiều uid cách nhau dấu cách hoặc ,)',

@@ -8,7 +8,7 @@ module.exports.config = {
   name: 'autosend',
   version: '1.0.1',
   role: 1,
-  author: 'ShinTHL09',
+  author: "TDF-2803",
   description: 'Tự động gửi tin nhắn theo giờ đã cài và tự xóa sau 5 phút',
   category: "Tiện ích",
   usage: 'autosend on/off',

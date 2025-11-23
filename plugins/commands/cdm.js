@@ -4,7 +4,7 @@ module.exports.config = {
     name: "cdm",
     version: "1.1.2",
     role: 0,
-    author: "NLam182",
+    author: "TDF-2803",
     description: "Kiểm tra thông tin tên miền qua whois.inet.vn.",
     category: "Tiện ích",
     usage: "cdm <tên miền>",

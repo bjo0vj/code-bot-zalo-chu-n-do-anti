@@ -1,37 +1,84 @@
 const fs = require("fs");
 const path = require("path");
 
-// DB Helper: Get session data
-async function loadData(threadId) {
-    if (!global.database) return { target: 0, isRunning: false, sosanh: [], dagui: [] };
-    const data = await global.database.getSession(threadId);
-    return data || { target: 0, isRunning: false, sosanh: [], dagui: [] };
+const trackingDir = path.join(__dirname, "../../data/tracking_data");
+
+// Helper to load/save data
+function getFilePath(threadId) {
+    if (!fs.existsSync(trackingDir)) {
+        fs.mkdirSync(trackingDir, { recursive: true });
+    }
+    return path.join(trackingDir, `${threadId}.json`);
 }
 
-// DB Helper: Save session data
-async function saveData(threadId, data) {
-    if (!global.database) return;
-    await global.database.saveSession(threadId, data);
+function loadData(threadId) {
+    const filePath = getFilePath(threadId);
+    if (!fs.existsSync(filePath)) {
+        const defaultData = {
+            target: 0,
+            isRunning: false,
+            sosanh: [], // List of { uid, name }
+            dagui: [],  // List of uids
+            ranks: [],  // List of { name, uid, count }
+            firstSenderRecorded: false // Flag for current session
+        };
+        fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
+        return defaultData;
+    }
+    try {
+        const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+        // Ensure properties exist
+        if (!data.sosanh) data.sosanh = [];
+        if (!data.dagui) data.dagui = [];
+        if (!data.ranks) data.ranks = [];
+        if (typeof data.firstSenderRecorded === 'undefined') data.firstSenderRecorded = false;
+        return data;
+    } catch (e) {
+        return {
+            target: 0,
+            isRunning: false,
+            sosanh: [],
+            dagui: [],
+            ranks: [],
+            firstSenderRecorded: false
+        };
+    }
 }
+
+function saveData(threadId, data) {
+    const filePath = getFilePath(threadId);
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
 
 module.exports.config = {
     name: "tracking",
-    version: "2.0.0",
+    version: "1.3.0",
     role: 0,
-    author: "Bot Tu Code",
-    description: "Quản lý điểm danh gửi ảnh (Database Version)",
+    author: "TDF-2803",
+    description: "Quản lý điểm danh gửi ảnh",
     category: "Tiện ích",
     usage: "/addten, /setnguoi <số lượng>, /start, /check, /stop, /check history <giờ>",
     cooldowns: 5,
     aliases: ["addten", "setnguoi", "start", "check", "stop", "checkdagui", "checksosanh", "cleardagui", "clearsosanh"]
 };
 
-module.exports.run = async function ({ api, event, args }) {
+// Helper to find history files for a thread
+function findHistoryFiles(threadId) {
+    const historyDir = path.join(__dirname, "../../data/history_data");
+    if (!fs.existsSync(historyDir)) return [];
+
+    const files = fs.readdirSync(historyDir);
+    // Find all files ending with _threadId.txt
+    return files.filter(f => f.endsWith(`_${threadId}.txt`)).map(f => path.join(historyDir, f));
+}
+
+module.exports.run = async function ({ api, event, args, Threads }) {
     const { threadId, type } = event;
     const senderID = event.senderID || event.data?.uidFrom;
     const body = event.body || event.data?.content || "";
 
-    let data = await loadData(threadId);
+    let data = loadData(threadId);
 
     // Helper to get group name
     const getGroupName = async () => {
@@ -74,7 +121,7 @@ module.exports.run = async function ({ api, event, args }) {
             }
 
             data.sosanh.push({ uid: senderID, name: name });
-            await saveData(threadId, data);
+            saveData(threadId, data);
 
             const groupName = await getGroupName();
             return api.sendMessage({ msg: `✅ Đã thêm ${name} vào danh sách so sánh.\n📂 Tên nhóm: ${groupName}\n🆔 ID nhóm: ${threadId}`, ttl: 300000 }, threadId, type);
@@ -95,7 +142,7 @@ module.exports.run = async function ({ api, event, args }) {
         }
         data.target = target;
         data.dagui = []; // Reset current session
-        await saveData(threadId, data);
+        saveData(threadId, data);
 
         const groupName = await getGroupName();
         return api.sendMessage({ msg: `✅ Đã thiết lập giới hạn là: ${target} người.\nDanh sách đã gửi đã được reset.\n📂 Tên nhóm: ${groupName}\n🆔 ID nhóm: ${threadId}`, ttl: 300000 }, threadId, type);
@@ -111,7 +158,18 @@ module.exports.run = async function ({ api, event, args }) {
         }
         data.isRunning = true;
         data.dagui = [];
-        await saveData(threadId, data);
+        data.firstSenderRecorded = false; // Reset flag for new session
+        saveData(threadId, data);
+
+        // Enable history recording in Threads database
+        try {
+            const threadData = (await Threads.getData(threadId)).data || {};
+            threadData.record_history = true;
+            await Threads.setData(threadId, threadData);
+        } catch (e) {
+            console.error('[tracking] Error enabling record_history:', e);
+        }
+
         return api.sendMessage({ msg: "🚀 Bắt đầu phiên điểm danh! Mọi người hãy gửi ảnh nhé.", ttl: 300000 }, threadId, type);
     }
 
@@ -127,7 +185,17 @@ module.exports.run = async function ({ api, event, args }) {
         const count = data.dagui.length;
         data.isRunning = false;
         data.dagui = [];
-        await saveData(threadId, data);
+        saveData(threadId, data);
+
+        // Disable history recording in Threads database
+        try {
+            const threadData = (await Threads.getData(threadId)).data || {};
+            threadData.record_history = false;
+            await Threads.setData(threadId, threadData);
+        } catch (e) {
+            console.error('[tracking] Error disabling record_history:', e);
+        }
+
         return api.sendMessage({ msg: `🛑 Đã kết thúc phiên điểm danh. Tổng cộng có ${count} người đã gửi.`, ttl: 300000 }, threadId, type);
     }
 
@@ -136,10 +204,16 @@ module.exports.run = async function ({ api, event, args }) {
         if (!isAdmin()) {
             return api.sendMessage({ msg: "⚠️ Bạn không có quyền sử dụng lệnh này.", ttl: 300000 }, threadId, type);
         }
-
+        const historyFiles = findHistoryFiles(threadId);
         try {
-            await global.database.clearHistory(threadId);
-            return api.sendMessage({ msg: "✅ Đã xóa hoàn toàn lịch sử ghi nhận (history) trong database.", ttl: 300000 }, threadId, type);
+            if (historyFiles.length > 0) {
+                historyFiles.forEach(file => {
+                    if (fs.existsSync(file)) fs.unlinkSync(file);
+                });
+                return api.sendMessage({ msg: "✅ Đã xóa hoàn toàn các file lịch sử ghi nhận (history). File mới sẽ được tạo khi có ảnh mới.", ttl: 300000 }, threadId, type);
+            } else {
+                return api.sendMessage({ msg: "⚠️ Chưa có dữ liệu lịch sử để xóa.", ttl: 300000 }, threadId, type);
+            }
         } catch (e) {
             console.error(e);
             return api.sendMessage({ msg: "⚠️ Lỗi khi xóa lịch sử.", ttl: 300000 }, threadId, type);
@@ -153,35 +227,93 @@ module.exports.run = async function ({ api, event, args }) {
             return api.sendMessage({ msg: "⚠️ Vui lòng nhập số giờ hợp lệ. Ví dụ: /check history 24", ttl: 300000 }, threadId, type);
         }
 
+        const historyFiles = findHistoryFiles(threadId);
+        if (historyFiles.length === 0) {
+            return api.sendMessage({ msg: "⚠️ Chưa có dữ liệu lịch sử.", ttl: 300000 }, threadId, type);
+        }
+
         try {
             const now = Date.now();
             const startTime = now - (hours * 3600 * 1000);
-
-            const history = await global.database.getHistory(threadId, startTime);
-
-            if (history.length === 0) {
-                return api.sendMessage({ msg: `📭 Trong ${hours} giờ qua, chưa có ai gửi ảnh.`, ttl: 300000 }, threadId, type);
-            }
-
             const sentMap = {}; // uid -> { count, name }
 
-            history.forEach(row => {
-                const uid = row.sender_id;
-                const count = row.count;
-                const name = row.name;
+            for (const historyPath of historyFiles) {
+                if (!fs.existsSync(historyPath)) continue;
+                const fileContent = fs.readFileSync(historyPath, "utf8");
+                const lines = fileContent.split("\n").filter(line => line.trim() !== "");
 
-                if (!sentMap[uid]) sentMap[uid] = { count: 0, name: name || "Người dùng" };
-                sentMap[uid].count += count;
-                if (name && name !== "Người dùng") sentMap[uid].name = name;
-            });
+                lines.forEach(line => {
+                    // Try new format: timeString | name | uid | count | timestamp
+                    if (line.includes(" | ")) {
+                        const parts = line.split(" | ");
+                        if (parts.length >= 5) {
+                            const name = parts[1];
+                            const uid = parts[2];
+                            const count = parseInt(parts[3]);
+                            const timestamp = parseInt(parts[4]);
+
+                            if (timestamp >= startTime) {
+                                if (!sentMap[uid]) sentMap[uid] = { count: 0, name: name };
+                                sentMap[uid].count += count;
+                                if (name && name !== "Người dùng") sentMap[uid].name = name;
+                            }
+                        }
+                    }
+                    // Try old format: timestamp:uid:count:name:timeString
+                    else if (line.includes(":")) {
+                        const parts = line.split(":");
+                        if (parts.length >= 3) {
+                            const timestamp = parseInt(parts[0]);
+                            const uid = parts[1];
+                            const count = parseInt(parts[2]);
+                            let name = null;
+                            if (parts.length >= 4) name = parts[3];
+
+                            if (timestamp >= startTime) {
+                                if (!sentMap[uid]) sentMap[uid] = { count: 0, name: name || "Người dùng" };
+                                sentMap[uid].count += count;
+                                if (name && name !== "Người dùng") sentMap[uid].name = name;
+                            }
+                        }
+                    }
+                });
+            }
 
             const sentUIDs = Object.keys(sentMap);
-            const users = sentUIDs.map(uid => ({ name: sentMap[uid].name, count: sentMap[uid].count }));
-            users.sort((a, b) => b.count - a.count);
+
+            if (sentUIDs.length === 0) {
+                return api.sendMessage({ msg: `📭 Trong ${hours} giờ qua, chưa có ai gửi ảnh.`, ttl: 300000 }, threadId, type);
+            }
 
             let msgReport = `📊 TỔNG HỢP LỊCH SỬ (${hours} GIỜ QUA)\n`;
             msgReport += `Tổng số người gửi: ${sentUIDs.length}\n\n`;
             msgReport += `Danh sách chi tiết:\n`;
+
+            // Get names for report
+            const userPromises = sentUIDs.map(async (uid) => {
+                let name = sentMap[uid].name || "Người dùng";
+
+                if (!name || name === "Người dùng") {
+                    const userInSosanh = data.sosanh.find(u => u.uid === uid);
+                    if (userInSosanh) {
+                        name = userInSosanh.name;
+                    } else {
+                        try {
+                            const info = await api.getUserInfo(uid);
+                            if (info && info.changed_profiles && info.changed_profiles[uid]) {
+                                name = info.changed_profiles[uid].displayName || name;
+                            } else if (info && info[uid]) {
+                                name = info[uid].name || info[uid].displayName || name;
+                            }
+                        } catch (e) { }
+                    }
+                }
+                return { name, count: sentMap[uid].count };
+            });
+
+            const users = await Promise.all(userPromises);
+            users.sort((a, b) => b.count - a.count); // Sort by count desc
+
             users.forEach((u, i) => {
                 msgReport += `${i + 1}. ${u.name} (${u.count} ảnh)\n`;
             });
@@ -204,19 +336,49 @@ module.exports.run = async function ({ api, event, args }) {
                 return api.sendMessage({ msg: "⚠️ Vui lòng nhập số giờ hợp lệ. Ví dụ: /check 2 24", ttl: 300000 }, threadId, type);
             }
 
+            const historyFiles = findHistoryFiles(threadId);
+            if (historyFiles.length === 0) {
+                return api.sendMessage({ msg: "⚠️ Chưa có dữ liệu lịch sử.", ttl: 300000 }, threadId, type);
+            }
+
             try {
                 const now = Date.now();
                 const startTime = now - (hours * 3600 * 1000);
-
-                const history = await global.database.getHistory(threadId, startTime);
-
                 const sentMap = {}; // uid -> count
-                history.forEach(row => {
-                    const uid = row.sender_id;
-                    const count = row.count;
-                    if (!sentMap[uid]) sentMap[uid] = 0;
-                    sentMap[uid] += count;
-                });
+
+                for (const historyPath of historyFiles) {
+                    if (!fs.existsSync(historyPath)) continue;
+                    const fileContent = fs.readFileSync(historyPath, "utf8");
+                    const lines = fileContent.split("\n").filter(line => line.trim() !== "");
+
+                    lines.forEach(line => {
+                        // Support both formats for check 2 as well
+                        let timestamp, uid, count;
+
+                        if (line.includes(" | ")) {
+                            const parts = line.split(" | ");
+                            if (parts.length >= 5) {
+                                uid = parts[2];
+                                count = parseInt(parts[3]);
+                                timestamp = parseInt(parts[4]);
+                            }
+                        } else if (line.includes(":")) {
+                            const parts = line.split(":");
+                            if (parts.length >= 3) {
+                                timestamp = parseInt(parts[0]);
+                                uid = parts[1];
+                                count = parseInt(parts[2]);
+                            }
+                        }
+
+                        if (timestamp && uid && count) {
+                            if (timestamp >= startTime) {
+                                if (!sentMap[uid]) sentMap[uid] = 0;
+                                sentMap[uid] += count;
+                            }
+                        }
+                    });
+                }
 
                 const sentUIDs = Object.keys(sentMap);
                 const sosanh = data.sosanh || [];
@@ -254,23 +416,40 @@ module.exports.run = async function ({ api, event, args }) {
         // Existing /check (default) logic
         const target = data.target || 0;
         const dagui = data.dagui || [];
+        const isRunning = data.isRunning || false;
 
-        if (target === 0) {
-            if (dagui.length === 0) {
-                return api.sendMessage({ msg: "📭 Chưa có ai gửi ảnh trong phiên này.", ttl: 300000 }, threadId, type);
-            }
+        // Build status message
+        let statusMsg = "📊 TRẠNG THÁI TRACKING\n\n";
+        statusMsg += `🔹 Trạng thái: ${isRunning ? "🟢 ĐANG CHẠY" : "🔴 TẮT"}\n`;
+        statusMsg += `🔹 Mục tiêu: ${target > 0 ? target + " người" : "Chưa đặt"}\n`;
+        statusMsg += `🔹 Đã gửi: ${dagui.length} người\n`;
 
-            let msg = "📨 Danh sách người dùng đã gửi ảnh:\n";
-            dagui.forEach((uid, i) => {
-                const userInSosanh = data.sosanh.find(u => u.uid === uid);
-                const name = userInSosanh ? userInSosanh.name : "Người dùng";
-                msg += `${i + 1}. ${name} (${uid})\n`;
-            });
-            return api.sendMessage({ msg: msg, ttl: 300000 }, threadId, type);
+        if (isRunning && target > 0) {
+            const percent = Math.round((dagui.length / target) * 100);
+            statusMsg += `🔹 Tiến độ: ${percent}%\n`;
         }
 
-        // If target is set, show progress
-        return api.sendMessage({ msg: `📊 Tiến độ: ${dagui.length}/${target} người đã gửi.`, ttl: 300000 }, threadId, type);
+        statusMsg += `\n`;
+
+        if (!isRunning) {
+            statusMsg += "⏸️ Phiên tracking chưa bắt đầu.\n";
+            statusMsg += "💡 Admin dùng /start để bắt đầu.";
+            return api.sendMessage({ msg: statusMsg, ttl: 300000 }, threadId, type);
+        }
+
+        if (dagui.length === 0) {
+            statusMsg += "📭 Chưa có ai gửi ảnh trong phiên này.";
+            return api.sendMessage({ msg: statusMsg, ttl: 300000 }, threadId, type);
+        }
+
+        statusMsg += "📝 Danh sách đã gửi:\n";
+        dagui.forEach((uid, i) => {
+            const userInSosanh = data.sosanh.find(u => u.uid === uid);
+            const name = userInSosanh ? userInSosanh.name : "Người dùng";
+            statusMsg += `${i + 1}. ${name}\n`;
+        });
+
+        return api.sendMessage({ msg: statusMsg, ttl: 300000 }, threadId, type);
     }
 
     // /cleardagui (Admin only)
@@ -279,7 +458,7 @@ module.exports.run = async function ({ api, event, args }) {
             return api.sendMessage({ msg: "⚠️ Bạn không có quyền sử dụng lệnh này.", ttl: 300000 }, threadId, type);
         }
         data.dagui = [];
-        await saveData(threadId, data);
+        saveData(threadId, data);
         return api.sendMessage({ msg: "✅ Đã xóa toàn bộ danh sách đã gửi (dagui).", ttl: 300000 }, threadId, type);
     }
 
@@ -289,12 +468,12 @@ module.exports.run = async function ({ api, event, args }) {
             return api.sendMessage({ msg: "⚠️ Bạn không có quyền sử dụng lệnh này.", ttl: 300000 }, threadId, type);
         }
         data.sosanh = [];
-        await saveData(threadId, data);
+        saveData(threadId, data);
         return api.sendMessage({ msg: "✅ Đã xóa toàn bộ danh sách so sánh (sosanh).", ttl: 300000 }, threadId, type);
     }
 };
 
-module.exports.handleEvent = async function ({ api, event }) {
+module.exports.handleEvent = async function ({ api, event, Threads }) {
     const { threadId, type } = event;
     const senderID = event.senderID || event.data?.uidFrom;
 
@@ -307,7 +486,7 @@ module.exports.handleEvent = async function ({ api, event }) {
     if (!hasImage) return;
 
     // Load data for this specific thread
-    let data = await loadData(threadId);
+    let data = loadData(threadId);
 
     // Check if session is running
     if (!data.isRunning) return;
@@ -336,17 +515,44 @@ module.exports.handleEvent = async function ({ api, event }) {
         }, threadId, type);
     }
 
+    // Record first sender if not yet recorded this session
+    if (!data.firstSenderRecorded) {
+        // Find existing rank entry for this user
+        const existingRank = data.ranks.find(r => r.uid === senderID);
+
+        if (existingRank) {
+            // Increment count
+            existingRank.count++;
+            existingRank.name = name; // Update name in case it changed
+        } else {
+            // Add new rank entry
+            data.ranks.push({ name: name, uid: senderID, count: 1 });
+        }
+
+        data.firstSenderRecorded = true;
+
+        // Special message for first sender with trophy
+        const firstMsg = `🏆 @${name} là người đầu tiên gửi ảnh!\n✨ +1 điểm xếp hạng`;
+        api.sendMessage({
+            msg: firstMsg,
+            mentions: [{ pos: 4, uid: senderID, len: name.length + 1 }],
+            ttl: 300000
+        }, threadId, type);
+    }
+
     // Add to dagui (first time submission)
     data.dagui.push(senderID);
-    await saveData(threadId, data);
+    saveData(threadId, data);
 
-    // Send confirmation message with user mention (no UID)
-    const confirmMsg = `✅ Cảm ơn @${name} đã gửi ảnh thành công!`;
-    api.sendMessage({
-        msg: confirmMsg,
-        mentions: [{ pos: 12, uid: senderID, len: name.length + 1 }],
-        ttl: 300000
-    }, threadId, type);
+    // Send confirmation message with user mention (no UID) - only if not first sender
+    if (data.dagui.length > 1) {
+        const confirmMsg = `✅ Cảm ơn @${name} đã gửi ảnh thành công!`;
+        api.sendMessage({
+            msg: confirmMsg,
+            mentions: [{ pos: 12, uid: senderID, len: name.length + 1 }],
+            ttl: 300000
+        }, threadId, type);
+    }
 
     // Check if target reached
     const currentCount = data.dagui.length;
@@ -354,11 +560,25 @@ module.exports.handleEvent = async function ({ api, event }) {
 
     if (target > 0 && currentCount >= target) {
         // Use @All mention for completion message
-        const completeMsg = `🎉 @All ĐÃ XONG! Đã đủ ${target} người gửi ảnh!\n📊 Tổng quan:\n- Tổng cần: ${target}\n- Đã gửi: ${currentCount}`;
+        const completeMsg = `🎉 @All ĐÃ XONG! Đã đủ ${target} người gửi ảnh!\n📊 Tổng quan:\n- Tổng cần: ${target}\n- Đã gửi: ${currentCount}\n\n✅ Phiên điểm danh đã kết thúc!\n⏸️ Sử dụng /start để bắt đầu phiên mới.`;
         api.sendMessage({
             msg: completeMsg,
             mentions: [{ pos: 4, uid: "0", len: 4 }],
             ttl: 300000
         }, threadId, type);
+
+        // Auto-stop the session and clear dagui
+        data.isRunning = false;
+        data.dagui = [];
+        saveData(threadId, data);
+
+        // Disable history recording in Threads database
+        try {
+            const threadData = (await Threads.getData(threadId)).data || {};
+            threadData.record_history = false;
+            await Threads.setData(threadId, threadData);
+        } catch (e) {
+            console.error('[tracking] Error disabling record_history:', e);
+        }
     }
 };

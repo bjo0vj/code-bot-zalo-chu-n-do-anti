@@ -5,7 +5,7 @@ module.exports.config = {
     name: 'checkautosend',
     version: '1.0.0',
     role: 0,
-    author: 'TDF-2803',
+    author: "TDF-2803",
     description: 'Kiểm tra nội dung tự động gửi',
     category: "Tiện ích",
     usage: 'checkautosend',

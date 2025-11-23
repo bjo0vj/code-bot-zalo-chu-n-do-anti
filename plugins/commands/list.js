@@ -5,7 +5,7 @@ module.exports.config = {
     name: "list",
     version: "1.0.2",
     role: 0,
-    author: "Antigravity",
+    author: "TDF-2803",
     description: "Xem danh sách sendall",
     category: "SendAll",
     usage: "/list data_sendall",

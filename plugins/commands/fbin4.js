@@ -6,7 +6,7 @@ module.exports.config = {
     name: 'fbin4',
     version: '1.0.1',
     role: 0,
-    author: 'ShinTHL09',
+    author: "TDF-2803",
     description: 'Lấy thông tin Facebook bằng link hoặc UID',
     category: 'Tiện ích',
     usage: 'fbin4 [uid hoặc link]',

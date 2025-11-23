@@ -10,7 +10,7 @@ module.exports.config = {
   name: 'upt',
   version: '1.0.0',
   role: 0,
-  author: 'ShinTHL09, GwenDev',
+  author: "TDF-2803",
   description: 'Hiển thị thời gian hoạt động của bot bằng Canvas',
   category: 'Hệ thống',
   usage: 'upt',

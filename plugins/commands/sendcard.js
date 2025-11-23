@@ -2,7 +2,7 @@ module.exports.config = {
   name: 'sendcard',
   version: '1.0.0',
   role: 0,
-  author: 'NLam182',
+  author: "TDF-2803",
   description: 'Gửi danh thiếp của người được tag',
   category: 'Tiện ích',
   usage: 'sendcard @user [nội dung tuỳ chọn]',

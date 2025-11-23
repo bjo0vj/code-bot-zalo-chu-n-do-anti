@@ -5,7 +5,7 @@ module.exports.config = {
     name: "delete",
     version: "1.0.0",
     role: 1, // Admin group or Bot Admin
-    author: "Antigravity",
+    author: "TDF-2803",
     description: "Xóa database sendall của nhóm",
     category: "SendAll",
     usage: "/delete file sendall",

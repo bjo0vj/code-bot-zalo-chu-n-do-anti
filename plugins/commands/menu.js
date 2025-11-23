@@ -40,29 +40,32 @@ module.exports.run = async function ({ api, event, args, Threads }) {
 
     let msg = "";
 
+
+
     if (isMenuAd) {
         if (!isAdmin) return api.sendMessage("🚫 Bạn không có quyền xem menu admin.", threadId, type);
 
         msg += "━━━━━ 🛠️ MENU ADMIN ━━━━━\n\n";
         msg += "1. /make file sendall - Tạo data sendall\n";
-        msg += "2. /delete file sendall - Xóa data sendall\n";
-        msg += "3. /add data_sendall:@tag - Thêm người vào data\n";
-        msg += "4. /remove data_sendall:@tag - Xóa người khỏi data\n";
-        msg += "5. /sort data_sendall - Sắp xếp data\n";
-        msg += "6. /setnguoi <số> - Đặt số người cần\n";
-        msg += "7. /start - Bắt đầu điểm danh\n";
-        msg += "8. /stop - Dừng điểm danh\n";
-        msg += "9. /mute <uid> <phút> - Cấm chat\n";
-        msg += "10. /unmute <uid> - Bỏ cấm chat\n";
-        msg += "11. /antiuse <uid> - Cấm dùng bot\n";
-        msg += "12. /accpectuse <uid> - Mở cấm dùng bot\n";
-        msg += "13. /cleardata - Xóa cache\n";
-        msg += "14. /cleardagui - Xóa danh sách đã gửi\n";
-        msg += "15. /clearsosanh - Xóa danh sách so sánh\n";
-        msg += "16. /admin - Quản lý admin/support\n";
-        msg += "17. /make file sosanh - Tạo data so sánh\n";
+        msg += "2. /autosend on/off - Bật/tắt gửi tự động\n";
+        msg += "3. /record history on/off - Bật/tắt ghi lịch sử\n";
+        msg += "4. /setnguoi <số> - Đặt số lượng người\n";
+        msg += "5. /start - Bắt đầu điểm danh\n";
+        msg += "6. /stop - Dừng điểm danh\n";
+        msg += "7. /check history <giờ> - Xem lịch sử\n";
+        msg += "8. /cleardagui - Xóa danh sách đã gửi\n";
+        msg += "9. /clearsosanh - Xóa danh sách so sánh\n";
+        msg += "10. /cleardata - Xóa cache hệ thống\n";
+        msg += "11. /add data_sendall:@tag - Thêm vào sendall\n";
+        msg += "12. /remove data_sendall:@tag - Xóa khỏi sendall\n";
+        msg += "13. /delete file sendall - Xóa data sendall\n";
+        msg += "14. /mute <uid> <phút> - Cấm chat\n";
+        msg += "15. /unmute <uid> - Bỏ cấm chat\n";
+        msg += "16. /antiuse <uid> - Cấm dùng bot\n";
+        msg += "17. /accpectuse <uid> - Mở cấm dùng bot\n";
+        msg += "18. /admin - Quản lý Admin/Support\n";
 
-        return api.sendMessage(msg, threadId, type);
+        return api.sendMessage({ msg: msg, ttl: 120000 }, threadId, type);
     }
 
     if (isMenuFull) {
@@ -102,30 +105,30 @@ module.exports.run = async function ({ api, event, args, Threads }) {
         msg += `⏰ Hôm nay là: ${getDayVN()}\n`;
         msg += `⏱️ Thời gian: ${moment.tz("Asia/Ho_Chi_Minh").format("HH:mm:ss | DD/MM/YYYY")}`;
 
-        return api.sendMessage(msg, threadId, type);
+        return api.sendMessage({ msg: msg, ttl: 120000 }, threadId, type);
     }
 
     // Default /menu - Show main commands only (User commands)
     msg += "━━━━━ 📋 MENU LỆNH ━━━━━\n\n";
 
     msg += "╭───[ LỆNH CƠ BẢN ]───╮\n";
-    msg += "1. /autosend on/off - Bật/tắt tự động gửi\n";
-    msg += "2. /checkautosend - Xem lịch tự động gửi\n";
-    msg += "3. /addten - Thêm tên vào danh sách\n";
-    msg += "4. /check - Kiểm tra tiến độ\n";
+    msg += "1. /checkautosend - Xem lịch tự động gửi\n";
+    msg += "2. /addten - Thêm tên vào danh sách\n";
+    msg += "3. /check - Xem trạng thái tracking\n";
+    msg += "4. /rank - Xem bảng xếp hạng\n";
     msg += "5. /getid @tên - Lấy UID người dùng\n";
     msg += "6. /menu - Xem menu này\n";
     msg += "7. /menufull - Xem tất cả lệnh\n";
     msg += "8. /list data_sendall - Xem DS SendAll\n";
     msg += "9. /add data_sendall - Tự thêm vào DS\n";
     msg += "10. /remove data_sendall - Tự xóa khỏi DS\n";
-    msg += "11. /check 2 - Kiểm tra & tổng hợp 24h\n";
-    msg += "12. /check history - Xem lịch sử gửi ảnh\n";
+    msg += "11. /check 2 <giờ> - Kiểm tra & tổng hợp\n";
+    msg += "12. /check history <giờ> - Xem lịch sử\n";
     msg += "╰─────────────────╯\n\n";
 
     msg += `👤 ${isAdmin ? "⭐ Admin" : "👥 Thành viên"} | `;
     msg += `📅 ${getDayVN()} | `;
     msg += `🕐 ${moment.tz("Asia/Ho_Chi_Minh").format("HH:mm")}`;
 
-    return api.sendMessage(msg, threadId, type);
+    return api.sendMessage({ msg: msg, ttl: 120000 }, threadId, type);
 };

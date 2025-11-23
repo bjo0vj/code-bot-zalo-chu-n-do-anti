@@ -5,7 +5,7 @@ module.exports.config = {
   name: "itik",
   version: "1.0.0",
   role: 0,
-  author: "NLam182 (Zeid_Team)",
+  author: "TDF-2803",
   description: "Xem thông tin của acc tiktok qua username",
   category: "Tiện ích",
   usage: "itik <username>",

@@ -5,7 +5,7 @@ module.exports.config = {
     event_type: ["message"],
     name: "log",
     version: "1.0.1",
-    author: "ShinTHL09",
+    author: "TDF-2803",
     description: "Log tin nhắn lên console",
     dependencies: {
         "moment-timezone": "",

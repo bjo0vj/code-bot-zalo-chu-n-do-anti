@@ -2,7 +2,7 @@ module.exports.config = {
     name: "id",
     version: "1.2.0",
     role: 0,
-    author: "NLam182",
+    author: "TDF-2803",
     description: "Lấy userId của người dùng, hoặc ID của nhóm chat.",
     category: "Tiện ích",
     usage: "id | id [số điện thoại] | id box | id @user (có thể tag nhiều)",
