@@ -1,0 +1,80 @@
+HƯỚNG DẪN DEPLOY ZEID BOT LÊN REPLIT (MIỄN PHÍ 24/7)
+======================================================
+
+Tài liệu này hướng dẫn bạn deploy bot lên Replit, sử dụng Replit Database để lưu trữ dữ liệu và UptimeRobot để giữ bot chạy 24/7.
+
+PHẦN 1: CHUẨN BỊ CODE (Đã thực hiện)
+------------------------------------
+Tôi đã thêm các file cần thiết vào source code của bạn:
+1. `server.js`: Web server nhỏ để giữ bot "sống" (Keep-alive).
+2. `utils/db.js`: Module giúp lưu cache và tin nhắn vào Replit Database.
+3. `Zeid.js`: Đã được cập nhật để tự động chạy `server.js`.
+
+PHẦN 2: TẠO DỰ ÁN TRÊN REPLIT
+-----------------------------
+1. Truy cập [Replit](https://replit.com) và đăng nhập.
+2. Bấm **"Create Repl"**.
+3. Chọn Template: **Node.js**.
+4. Đặt tên (ví dụ: `zeid-bot-zalo`) -> Bấm **"Create Repl"**.
+
+PHẦN 3: UPLOAD CODE
+-------------------
+1. Trong giao diện Replit, tìm mục **Files** (bên trái).
+2. Kéo thả toàn bộ folder code bot của bạn từ máy tính vào vùng Files của Replit.
+   (Hoặc bấm nút 3 chấm -> Upload folder).
+
+PHẦN 4: CÀI ĐẶT THƯ VIỆN
+------------------------
+1. Chọn tab **Shell** (bên phải hoặc dưới cùng).
+2. Copy và chạy lệnh sau để cài các thư viện cần thiết:
+   `npm install zalo-sdk pg express node-fetch @replit/database dotenv`
+
+PHẦN 5: CẤU HÌNH BIẾN MÔI TRƯỜNG (SECRETS)
+------------------------------------------
+Để bảo mật, không lưu token trực tiếp trong code.
+1. Tìm công cụ **Secrets** (biểu tượng ổ khóa) ở thanh bên trái (Tools).
+2. Thêm các biến sau:
+   - Key: `ZALO_TOKEN` -> Value: [Token Zalo của bạn]
+   - Key: `APP_ID` -> Value: [App ID của bạn]
+   - Key: `APP_SECRET` -> Value: [Secret Key của bạn]
+   (Và các biến khác nếu bạn dùng trong config).
+
+PHẦN 6: CHẠY BOT
+----------------
+1. Bấm nút **Run** (màu xanh lá cây) ở trên cùng.
+2. Chờ bot cài đặt và khởi động.
+3. Nếu thấy dòng chữ "Bot Zalo đang chạy OK!" hiện lên ở khung Webview (bên phải) -> Thành công!
+
+PHẦN 7: GIỮ BOT CHẠY 24/7 (QUAN TRỌNG)
+--------------------------------------
+Replit sẽ tự tắt bot sau 1 giờ nếu không có ai truy cập. Để giữ nó chạy mãi:
+1. Copy đường link trang web hiện ở khung Webview của Replit (ví dụ: `https://zeid-bot-zalo.phatt.repl.co`).
+2. Truy cập [UptimeRobot](https://uptimerobot.com) và đăng ký tài khoản (miễn phí).
+3. Bấm **"Add New Monitor"**.
+4. Chọn:
+   - Monitor Type: **HTTP(s)**
+   - Friendly Name: Bot Zalo
+   - URL (or IP): [Dán link bạn vừa copy ở bước 1]
+   - Monitoring Interval: **5 minutes**
+5. Bấm **"Create Monitor"**.
+
+Xong! UptimeRobot sẽ "ping" bot của bạn mỗi 5 phút, giúp Replit hiểu là bot đang được sử dụng và không tắt nó đi.
+
+PHẦN 8: SỬ DỤNG DATABASE (DÀNH CHO DEV)
+---------------------------------------
+Thay vì lưu file JSON (sẽ bị mất khi Replit khởi động lại), hãy dùng module `utils/db.js`:
+
+```javascript
+const db = require('./utils/db');
+
+// Lưu cache
+await db.saveCache("user_123", { status: "vip" });
+
+// Lấy cache
+const data = await db.loadCache("user_123");
+
+// Lưu tin nhắn
+await db.appendMessage(senderID, messageContent);
+```
+
+CHÚC BẠN THÀNH CÔNG!

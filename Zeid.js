@@ -8,6 +8,7 @@ const loaderCommand = require("./core/loader/loaderCommand");
 const loaderEvent = require("./core/loader/loaderEvent");
 const schedule = require("node-schedule");
 const { cleanOldMessages } = require("./utils/index");
+require('./server.js'); // Keep-alive for Replit
 
 global.client = new Object({
   commands: new Map(),
