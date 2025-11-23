@@ -4,39 +4,12 @@ const path = require('path');
 module.exports.config = {
     name: 'imageHistoryTracker',
     event_type: ['message'],
-    version: '2.3.0',
+    version: '2.4.0',
     author: 'Bot',
-    description: 'Ghi lại lịch sử gửi ảnh (Append-only)'
+    description: 'Ghi lại lịch sử gửi ảnh (Database Version)'
 };
 
-let groupNames = {}; // Cache group names: { threadId: groupName }
 let api = null;
-
-async function getGroupName(threadId) {
-    if (groupNames[threadId]) return groupNames[threadId];
-
-    try {
-        const groupInfo = await api.getGroupInfo(threadId);
-        const name = groupInfo.gridInfoMap?.[threadId]?.name || 'Unknown';
-        // Sanitize filename: remove special chars, keep alphanumeric, underscores, hyphens, spaces
-        groupNames[threadId] = name.replace(/[^a-zA-Z0-9_\-\s\u00C0-\u1EF9]/g, '_');
-        return groupNames[threadId];
-    } catch (e) {
-        console.error('Error getting group name:', e);
-        groupNames[threadId] = 'Unknown';
-        return 'Unknown';
-    }
-}
-
-async function getHistoryFilePath(threadId) {
-    const historyDir = path.join(__dirname, '../../data/history_data');
-    if (!fs.existsSync(historyDir)) {
-        fs.mkdirSync(historyDir, { recursive: true });
-    }
-
-    const groupName = await getGroupName(threadId);
-    return path.join(historyDir, `history_(${groupName})_${threadId}.txt`);
-}
 
 module.exports.onLoad = function ({ api: apiInstance }) {
     api = apiInstance;
@@ -64,11 +37,7 @@ module.exports.run = async function ({ api: apiInstance, event }) {
     const senderID = data.uidFrom || event.senderID;
     if (!senderID) return;
 
-    const filePath = await getHistoryFilePath(threadId);
     const timestamp = Date.now();
-
-    // Get readable time string (Asia/Ho_Chi_Minh)
-    const timeString = new Date(timestamp).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
 
     // Get user name
     let name = "Người dùng";
@@ -89,12 +58,8 @@ module.exports.run = async function ({ api: apiInstance, event }) {
         }
     }
 
-    // Format: timeString | name | uid | count | timestamp
-    const line = `${timeString} | ${name} | ${senderID} | ${imageCount} | ${timestamp}\n`;
-
-    try {
-        fs.appendFileSync(filePath, line, 'utf8');
-    } catch (e) {
-        console.error('Error appending to history file:', e);
+    // Save to Database
+    if (global.database) {
+        await global.database.addHistory(threadId, senderID, name, imageCount, timestamp);
     }
 };

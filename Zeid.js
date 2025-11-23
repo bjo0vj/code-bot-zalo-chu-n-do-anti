@@ -90,6 +90,11 @@ global.api = null;
     cleanOldMessages();
   });
 
+  // Connect to Database
+  const database = require("./utils/database");
+  await database.connect();
+  global.database = database; // Make DB accessible globally
+
   const api = await login();
 
   global.api = api;
