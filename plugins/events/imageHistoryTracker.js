@@ -52,16 +52,23 @@ module.exports.run = async function ({ api: apiInstance, event, Threads }) {
         msgType: data?.msgType
     });
 
-    if (!event.isGroup) return; // Only track group messages
+    // Fix: isGroup might be undefined. Check if threadId exists and is different from senderID (or just rely on threadId)
+    // In Zalo, group threadIds are usually different from user IDs.
+    // If isGroup is explicitly false, return. If undefined, proceed if threadId exists.
+    if (event.isGroup === false) return;
+    if (!threadId) return;
 
     // Check if recording is enabled for this group
     try {
-        const thread = await Threads.getData(threadId);
-        const recordEnabled = thread.data && thread.data.record_history;
+        const threadData = await Threads.getData(threadId);
+        // Threads.getData returns the data object directly, not wrapped in { data: ... }
+        // So we access record_history directly from threadData
+        const recordEnabled = threadData && threadData.record_history;
 
         console.log('[ImageHistoryTracker] Recording status:', {
             threadId: threadId,
-            recordEnabled: recordEnabled
+            recordEnabled: recordEnabled,
+            data: threadData
         });
 
         if (!recordEnabled) {
@@ -74,6 +81,8 @@ module.exports.run = async function ({ api: apiInstance, event, Threads }) {
     }
 
     const msgType = data?.msgType;
+    console.log('[ImageHistoryTracker] Inspecting attachments:', JSON.stringify(event.attachments, null, 2));
+    console.log('[ImageHistoryTracker] msgType:', msgType);
 
     // Count images
     let imageCount = 0;

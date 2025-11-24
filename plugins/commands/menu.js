@@ -59,10 +59,10 @@ module.exports.run = async function ({ api, event, args, Threads }) {
         msg += "11. /add data_sendall:@tag - Thêm vào sendall\n";
         msg += "12. /remove data_sendall:@tag - Xóa khỏi sendall\n";
         msg += "13. /delete file sendall - Xóa data sendall\n";
-        msg += "14. /mute <uid> <phút> - Cấm chat\n";
-        msg += "15. /unmute <uid> - Bỏ cấm chat\n";
-        msg += "16. /antiuse <uid> - Cấm dùng bot\n";
-        msg += "17. /accpectuse <uid> - Mở cấm dùng bot\n";
+        msg += "14. /antiuse <uid> - Cấm dùng bot\n";
+        msg += "15. /accpectuse <uid> - Mở cấm dùng bot\n";
+        msg += "16. /delete all chat all mem - Xóa toàn bộ tin nhắn\n";
+        msg += "17. /sendall <nội dung> - Gửi tin nhắn cho tất cả thành viên\n";
         msg += "18. /admin - Quản lý Admin/Support\n";
 
         return api.sendMessage({ msg: msg, ttl: 120000 }, threadId, type);

@@ -60,7 +60,7 @@ module.exports.config = {
     category: "Tiện ích",
     usage: "/addten, /setnguoi <số lượng>, /start, /check, /stop, /check history <giờ>",
     cooldowns: 5,
-    aliases: ["addten", "setnguoi", "start", "check", "stop", "checkdagui", "checksosanh", "cleardagui", "clearsosanh"]
+    aliases: ["addten", "setnguoi", "start", "check", "stop", "checkdagui", "checknguoidagui", "checksosanh", "cleardagui", "clearsosanh"]
 };
 
 // Helper to find history files for a thread
@@ -442,14 +442,48 @@ module.exports.run = async function ({ api, event, args, Threads }) {
             return api.sendMessage({ msg: statusMsg, ttl: 300000 }, threadId, type);
         }
 
-        statusMsg += "📝 Danh sách đã gửi:\n";
-        dagui.forEach((uid, i) => {
-            const userInSosanh = data.sosanh.find(u => u.uid === uid);
-            const name = userInSosanh ? userInSosanh.name : "Người dùng";
-            statusMsg += `${i + 1}. ${name}\n`;
-        });
+        // Removed list display from /check
+        statusMsg += "\n💡 Dùng /checkdagui để xem danh sách người đã gửi.";
+        statusMsg += "\n💡 Dùng /checksosanh để xem danh sách người cần gửi.";
 
         return api.sendMessage({ msg: statusMsg, ttl: 300000 }, threadId, type);
+    }
+
+    // /checkdagui or /checknguoidagui
+    if (body.startsWith("/checkdagui") || body.startsWith("/checknguoidagui")) {
+        let data = loadData(threadId);
+        const dagui = data.dagui || [];
+        const sosanh = data.sosanh || [];
+
+        if (dagui.length === 0) {
+            return api.sendMessage({ msg: "📭 Chưa có ai gửi ảnh.", ttl: 300000 }, threadId, type);
+        }
+
+        let msg = "📝 DANH SÁCH ĐÃ GỬI:\n";
+        dagui.forEach((uid, i) => {
+            const userInSosanh = sosanh.find(u => u.uid === uid);
+            const name = userInSosanh ? userInSosanh.name : "Người dùng";
+            msg += `${i + 1}. ${name}\n`;
+        });
+
+        return api.sendMessage({ msg: msg, ttl: 300000 }, threadId, type);
+    }
+
+    // /checksosanh
+    if (body.startsWith("/checksosanh")) {
+        let data = loadData(threadId);
+        const sosanh = data.sosanh || [];
+
+        if (sosanh.length === 0) {
+            return api.sendMessage({ msg: "📭 Danh sách so sánh đang trống.", ttl: 300000 }, threadId, type);
+        }
+
+        let msg = "📋 DANH SÁCH CẦN GỬI (SO SÁNH):\n";
+        sosanh.forEach((u, i) => {
+            msg += `${i + 1}. ${u.name}\n`;
+        });
+
+        return api.sendMessage({ msg: msg, ttl: 300000 }, threadId, type);
     }
 
     // /cleardagui (Admin only)
@@ -531,20 +565,23 @@ module.exports.handleEvent = async function ({ api, event, Threads }) {
 
         data.firstSenderRecorded = true;
 
-        // Special message for first sender with trophy
+        // SILENT MODE: Commented out first sender message
+        /*
         const firstMsg = `🏆 @${name} là người đầu tiên gửi ảnh!\n✨ +1 điểm xếp hạng`;
         api.sendMessage({
             msg: firstMsg,
             mentions: [{ pos: 4, uid: senderID, len: name.length + 1 }],
             ttl: 300000
         }, threadId, type);
+        */
     }
 
     // Add to dagui (first time submission)
     data.dagui.push(senderID);
     saveData(threadId, data);
 
-    // Send confirmation message with user mention (no UID) - only if not first sender
+    // SILENT MODE: Commented out success message
+    /*
     if (data.dagui.length > 1) {
         const confirmMsg = `✅ Cảm ơn @${name} đã gửi ảnh thành công!`;
         api.sendMessage({
@@ -553,6 +590,7 @@ module.exports.handleEvent = async function ({ api, event, Threads }) {
             ttl: 300000
         }, threadId, type);
     }
+    */
 
     // Check if target reached
     const currentCount = data.dagui.length;

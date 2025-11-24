@@ -1,13 +1,13 @@
 const axios = require('axios');
 
 module.exports.config = {
-  name: 'gpt',
+  name: 'ask',
   version: '1.0.0',
   role: 0,
   author: "TDF-2803",
   description: 'Hỏi chatgpt',
   category: 'Tiện ích',
-  usage: 'gpt <text>',
+  usage: 'ask <text>',
   cooldowns: 2,
   dependencies: {}
 };
